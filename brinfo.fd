@@ -1,0 +1,536 @@
+Magic: 15000
+
+Internal Form Definition File
+    (do not change)
+
+Number of forms: 2
+Unit of measure: FL_COORD_PIXEL
+SnapGrid: 5
+
+=============== FORM ===============
+Name: main
+Width: 304
+Height: 227
+Number of Objects: 23
+
+--------------------
+class: FL_BOX
+type: FL_FLAT_BOX
+box: 0 0 304 227
+boxtype: FL_FLAT_BOX
+colors: FL_COL1 FL_COL1
+alignment: FL_ALIGN_CENTER
+style: FL_NORMAL_STYLE
+size: FL_DEFAULT_SIZE
+lcol: FL_BLACK
+label: 
+shortcut: 
+resize: FL_RESIZE_NONE
+gravity: FL_NoGravity FL_NoGravity
+name: 
+callback: 
+argument: 
+
+--------------------
+class: FL_INPUT
+type: FL_NORMAL_INPUT
+box: 70 10 130 20
+boxtype: FL_DOWN_BOX
+colors: FL_COL1 FL_MCOL
+alignment: FL_ALIGN_LEFT
+style: FL_NORMAL_STYLE
+size: FL_DEFAULT_SIZE
+lcol: FL_BLACK
+label: 
+shortcut: 
+resize: FL_RESIZE_ALL
+gravity: FL_NoGravity FL_NoGravity
+name: prnfile
+callback: onprnfile
+argument: 0
+
+--------------------
+class: FL_TEXT
+type: FL_NORMAL_TEXT
+box: 10 10 60 20
+boxtype: FL_FLAT_BOX
+colors: FL_COL1 FL_MCOL
+alignment: FL_ALIGN_LEFT|FL_ALIGN_INSIDE
+style: FL_NORMAL_STYLE
+size: FL_DEFAULT_SIZE
+lcol: FL_BLACK
+label: Device:
+shortcut: 
+resize: FL_RESIZE_ALL
+gravity: FL_NoGravity FL_NoGravity
+name: 
+callback: 
+argument: 
+
+--------------------
+class: FL_BUTTON
+type: FL_NORMAL_BUTTON
+box: 210 10 30 20
+boxtype: FL_UP_BOX
+colors: FL_COL1 FL_COL1
+alignment: FL_ALIGN_CENTER
+style: FL_NORMAL_STYLE
+size: FL_DEFAULT_SIZE
+lcol: FL_BLACK
+label: Go
+shortcut: 
+resize: FL_RESIZE_ALL
+gravity: FL_NoGravity FL_NoGravity
+name: prngo
+callback: onprngo
+argument: 0
+
+--------------------
+class: FL_TEXT
+type: FL_NORMAL_TEXT
+box: 50 50 245 40
+boxtype: FL_FLAT_BOX
+colors: FL_COL1 FL_MCOL
+alignment: FL_ALIGN_LEFT|FL_ALIGN_INSIDE
+style: FL_NORMAL_STYLE
+size: FL_DEFAULT_SIZE
+lcol: FL_BLACK
+label: Brother HL-1110\nReady
+shortcut: 
+resize: FL_RESIZE_ALL
+gravity: FL_NoGravity FL_NoGravity
+name: prninfo
+callback: 
+argument: 
+
+--------------------
+class: FL_BUTTON
+type: FL_NORMAL_BUTTON
+box: 10 110 160 20
+boxtype: FL_UP_BOX
+colors: FL_COL1 FL_COL1
+alignment: FL_ALIGN_LEFT|FL_ALIGN_INSIDE
+style: FL_NORMAL_STYLE
+size: FL_DEFAULT_SIZE
+lcol: FL_BLACK
+label: Send Maintenance Print
+shortcut: #M
+resize: FL_RESIZE_ALL
+gravity: FL_NoGravity FL_NoGravity
+name: prnmaint
+callback: onprnmaint
+argument: 0
+    mbuttons: 1
+
+--------------------
+class: FL_BUTTON
+type: FL_NORMAL_BUTTON
+box: 10 135 160 20
+boxtype: FL_UP_BOX
+colors: FL_COL1 FL_COL1
+alignment: FL_ALIGN_LEFT|FL_ALIGN_INSIDE
+style: FL_NORMAL_STYLE
+size: FL_DEFAULT_SIZE
+lcol: FL_BLACK
+label: Send Test Print
+shortcut: #T
+resize: FL_RESIZE_ALL
+gravity: FL_NoGravity FL_NoGravity
+name: prntest
+callback: onprntest
+argument: 0
+    mbuttons: 1
+
+--------------------
+class: FL_PIXMAP
+type: FL_NORMAL_PIXMAP
+box: 10 50 40 40
+boxtype: FL_NO_BOX
+colors: FL_COL1 FL_COL1
+alignment: FL_ALIGN_BOTTOM
+style: FL_NORMAL_STYLE
+size: FL_DEFAULT_SIZE
+lcol: FL_BLACK
+label: 
+shortcut: 
+resize: FL_RESIZE_ALL
+gravity: FL_NoGravity FL_NoGravity
+name: 
+callback: 
+argument: 
+    file: trafficg.xpm
+    fullpath: 0
+    data: trafficg_xpm
+
+--------------------
+class: FL_BOX
+type: FL_DOWN_BOX
+box: 4 40 297 3
+boxtype: FL_DOWN_BOX
+colors: FL_COL1 FL_COL1
+alignment: FL_ALIGN_CENTER
+style: FL_NORMAL_STYLE
+size: FL_DEFAULT_SIZE
+lcol: FL_BLACK
+label: 
+shortcut: 
+resize: FL_RESIZE_ALL
+gravity: FL_NoGravity FL_NoGravity
+name: 
+callback: 
+argument: 
+
+--------------------
+class: FL_BOX
+type: FL_DOWN_BOX
+box: 4 96 297 3
+boxtype: FL_DOWN_BOX
+colors: FL_COL1 FL_COL1
+alignment: FL_ALIGN_CENTER
+style: FL_NORMAL_STYLE
+size: FL_DEFAULT_SIZE
+lcol: FL_BLACK
+label: 
+shortcut: 
+resize: FL_RESIZE_ALL
+gravity: FL_NoGravity FL_NoGravity
+name: 
+callback: 
+argument: 
+
+--------------------
+class: FL_LIGHTBUTTON
+type: FL_PUSH_BUTTON
+box: 240 10 50 20
+boxtype: FL_UP_BOX
+colors: FL_COL1 FL_YELLOW
+alignment: FL_ALIGN_CENTER
+style: FL_NORMAL_STYLE
+size: FL_DEFAULT_SIZE
+lcol: FL_BLACK
+label: Auto
+shortcut: #A
+resize: FL_RESIZE_ALL
+gravity: FL_NoGravity FL_NoGravity
+name: prnauto
+callback: onprnauto
+argument: 0
+    value: 1
+
+--------------------
+class: FL_SLIDER
+type: FL_HOR_PROGRESS_BAR
+box: 60 190 110 20
+boxtype: FL_DOWN_BOX
+colors: FL_COL1 FL_BOTTOM_BCOL
+alignment: FL_ALIGN_BOTTOM
+style: FL_NORMAL_STYLE
+size: FL_TINY_SIZE
+lcol: FL_BLACK
+label: 
+shortcut: 
+resize: FL_RESIZE_ALL
+gravity: FL_NoGravity FL_NoGravity
+name: 
+callback: 
+argument: 
+return: FL_RETURN_CHANGED
+    bounds: 0 100
+    value: 30
+    increment: 0.1 0.1
+    slsize: 0.16
+
+--------------------
+class: FL_TEXT
+type: FL_NORMAL_TEXT
+box: 10 190 50 20
+boxtype: FL_FLAT_BOX
+colors: FL_COL1 FL_MCOL
+alignment: FL_ALIGN_LEFT|FL_ALIGN_INSIDE
+style: FL_NORMAL_STYLE
+size: FL_DEFAULT_SIZE
+lcol: FL_BLACK
+label: Drum:
+shortcut: 
+resize: FL_RESIZE_ALL
+gravity: FL_NoGravity FL_NoGravity
+name: 
+callback: 
+argument: 
+
+--------------------
+class: FL_TIMER
+type: FL_HIDDEN_TIMER
+box: 0 0 5 5
+boxtype: FL_DOWN_BOX
+colors: FL_COL1 FL_RED
+alignment: FL_ALIGN_LEFT
+style: FL_NORMAL_STYLE
+size: FL_DEFAULT_SIZE
+lcol: FL_BLACK
+label: 
+shortcut: 
+resize: FL_RESIZE_NONE
+gravity: FL_NoGravity FL_NoGravity
+name: timer
+callback: 
+argument: 
+
+--------------------
+class: FL_SLIDER
+type: FL_VERT_PROGRESS_BAR
+box: 180 110 20 90
+boxtype: FL_DOWN_BOX
+colors: FL_COL1 FL_BLACK
+alignment: FL_ALIGN_BOTTOM
+style: FL_NORMAL_STYLE
+size: FL_TINY_SIZE
+lcol: FL_BLACK
+label: BK
+shortcut: 
+resize: FL_RESIZE_ALL
+gravity: FL_NoGravity FL_NoGravity
+name: tonerbk
+callback: 
+argument: 
+return: FL_RETURN_CHANGED
+    bounds: 100 0
+    value: 50
+    increment: 0.1 0.1
+    slsize: 0.22
+
+--------------------
+class: FL_BUTTON
+type: FL_NORMAL_BUTTON
+box: 95 160 75 20
+boxtype: FL_UP_BOX
+colors: FL_COL1 FL_COL1
+alignment: FL_ALIGN_LEFT|FL_ALIGN_INSIDE
+style: FL_NORMAL_STYLE
+size: FL_DEFAULT_SIZE
+lcol: FL_BLACK
+label: Configure...
+shortcut: #C
+resize: FL_RESIZE_ALL
+gravity: FL_NoGravity FL_NoGravity
+name: 
+callback: onprntest
+argument: 0
+    mbuttons: 1
+
+--------------------
+class: FL_BUTTON
+type: FL_NORMAL_BUTTON
+box: 10 160 80 20
+boxtype: FL_UP_BOX
+colors: FL_COL1 FL_COL1
+alignment: FL_ALIGN_LEFT|FL_ALIGN_INSIDE
+style: FL_NORMAL_STYLE
+size: FL_DEFAULT_SIZE
+lcol: FL_BLACK
+label: Enter Sleep
+shortcut: #S
+resize: FL_RESIZE_ALL
+gravity: FL_NoGravity FL_NoGravity
+name: 
+callback: onprntest
+argument: 0
+    mbuttons: 1
+
+--------------------
+class: FL_SLIDER
+type: FL_VERT_PROGRESS_BAR
+box: 210 110 20 90
+boxtype: FL_DOWN_BOX
+colors: FL_COL1 FL_YELLOW
+alignment: FL_ALIGN_BOTTOM
+style: FL_NORMAL_STYLE
+size: FL_TINY_SIZE
+lcol: FL_BLACK
+label: Y
+shortcut: 
+resize: FL_RESIZE_ALL
+gravity: FL_NoGravity FL_NoGravity
+name: tonery
+callback: 
+argument: 
+return: FL_RETURN_CHANGED
+    bounds: 100 0
+    value: 100
+    increment: 0.1 0.1
+    slsize: 0.22
+
+--------------------
+class: FL_SLIDER
+type: FL_VERT_PROGRESS_BAR
+box: 240 110 20 90
+boxtype: FL_DOWN_BOX
+colors: FL_COL1 FL_CYAN
+alignment: FL_ALIGN_BOTTOM
+style: FL_NORMAL_STYLE
+size: FL_TINY_SIZE
+lcol: FL_BLACK
+label: C
+shortcut: 
+resize: FL_RESIZE_ALL
+gravity: FL_NoGravity FL_NoGravity
+name: tonerc
+callback: 
+argument: 
+return: FL_RETURN_CHANGED
+    bounds: 100 0
+    value: 100
+    increment: 0.1 0.1
+    slsize: 0.22
+
+--------------------
+class: FL_SLIDER
+type: FL_VERT_PROGRESS_BAR
+box: 270 110 20 90
+boxtype: FL_DOWN_BOX
+colors: FL_COL1 FL_MAGENTA
+alignment: FL_ALIGN_BOTTOM
+style: FL_NORMAL_STYLE
+size: FL_TINY_SIZE
+lcol: FL_BLACK
+label: M
+shortcut: 
+resize: FL_RESIZE_ALL
+gravity: FL_NoGravity FL_NoGravity
+name: tonerm
+callback: 
+argument: 
+return: FL_RETURN_CHANGED
+    bounds: 100 0
+    value: 100
+    increment: 0.1 0.1
+    slsize: 0.22
+
+--------------------
+class: FL_PIXMAP
+type: FL_NORMAL_PIXMAP
+box: 270 110 20 90
+boxtype: FL_NO_BOX
+colors: FL_COL1 FL_COL1
+alignment: FL_ALIGN_BOTTOM
+style: FL_NORMAL_STYLE
+size: FL_DEFAULT_SIZE
+lcol: FL_BLACK
+label: 
+shortcut: 
+resize: FL_RESIZE_ALL
+gravity: FL_NoGravity FL_NoGravity
+name: 
+callback: 
+argument: 
+    file: checker.xpm
+    fullpath: 0
+    data: checker_xpm
+
+--------------------
+class: FL_PIXMAP
+type: FL_NORMAL_PIXMAP
+box: 240 110 20 90
+boxtype: FL_NO_BOX
+colors: FL_COL1 FL_COL1
+alignment: FL_ALIGN_BOTTOM
+style: FL_NORMAL_STYLE
+size: FL_DEFAULT_SIZE
+lcol: FL_BLACK
+label: 
+shortcut: 
+resize: FL_RESIZE_ALL
+gravity: FL_NoGravity FL_NoGravity
+name: 
+callback: 
+argument: 
+    file: checker.xpm
+    fullpath: 0
+    data: checker_xpm
+
+--------------------
+class: FL_PIXMAP
+type: FL_NORMAL_PIXMAP
+box: 210 110 20 90
+boxtype: FL_NO_BOX
+colors: FL_COL1 FL_COL1
+alignment: FL_ALIGN_BOTTOM
+style: FL_NORMAL_STYLE
+size: FL_DEFAULT_SIZE
+lcol: FL_BLACK
+label: 
+shortcut: 
+resize: FL_RESIZE_ALL
+gravity: FL_NoGravity FL_NoGravity
+name: 
+callback: 
+argument: 
+    file: checker.xpm
+    fullpath: 0
+    data: checker_xpm
+
+=============== FORM ===============
+Name: printing
+Width: 202
+Height: 63
+Number of Objects: 3
+
+--------------------
+class: FL_BOX
+type: FL_FLAT_BOX
+box: 0 0 202 63
+boxtype: FL_FLAT_BOX
+colors: FL_COL1 FL_COL1
+alignment: FL_ALIGN_CENTER
+style: FL_NORMAL_STYLE
+size: FL_DEFAULT_SIZE
+lcol: FL_BLACK
+label: 
+shortcut: 
+resize: FL_RESIZE_ALL
+gravity: FL_NoGravity FL_NoGravity
+name: 
+callback: 
+argument: 
+
+--------------------
+class: FL_TEXT
+type: FL_NORMAL_TEXT
+box: 50 10 140 40
+boxtype: FL_FLAT_BOX
+colors: FL_COL1 FL_MCOL
+alignment: FL_ALIGN_LEFT|FL_ALIGN_INSIDE
+style: FL_NORMAL_STYLE
+size: FL_DEFAULT_SIZE
+lcol: FL_BLACK
+label: Printing...
+shortcut: 
+resize: FL_RESIZE_ALL
+gravity: FL_NoGravity FL_NoGravity
+name: 
+callback: 
+argument: 
+
+--------------------
+class: FL_PIXMAP
+type: FL_NORMAL_PIXMAP
+box: 10 10 40 40
+boxtype: FL_NO_BOX
+colors: FL_COL1 FL_COL1
+alignment: FL_ALIGN_BOTTOM
+style: FL_NORMAL_STYLE
+size: FL_DEFAULT_SIZE
+lcol: FL_BLACK
+label: 
+shortcut: 
+resize: FL_RESIZE_ALL
+gravity: FL_NoGravity FL_NoGravity
+name: 
+callback: 
+argument: 
+    file: printer.xpm
+    fullpath: 0
+    data: printer
+
+==============================
+create_the_forms
