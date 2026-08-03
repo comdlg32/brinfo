@@ -12,3 +12,5 @@ core.*
 
 *.o
 *.obj
+a.out
+brinfo
