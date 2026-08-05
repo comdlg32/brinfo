@@ -1,0 +1,10 @@
+[Desktop Entry]
+Name=brinfo
+GenericName=Brother Printer Status Checker
+Comment=A status checker for Brother printers
+Exec=brinfo
+Icon=brinfo
+Type=Application
+Terminal=false
+StartupNotify=false
+Categories=Utility;

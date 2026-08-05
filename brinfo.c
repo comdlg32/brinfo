@@ -7,10 +7,14 @@
 #include "trafficr.xpm"
 #include "trafficg.xpm"
 #include "trafficy.xpm"
+#include "brinfo16.xpm"
 
-#include "checker.xpm"
-#include "checkerhor.xpm"
+//#include "checker.xpm"
+//#include "checkerhor.xpm"
 
+
+#include "na.xpm"
+#include "nahor.xpm"
 
 char prndevice[PATH_MAX];
 char prnmodel[128] = "Printer";
@@ -20,6 +24,7 @@ char statustext[256+128];
 
 int tries = 0;
 int fails = 0;
+int sentustatus = 0;
 
 int drumfull = 0;
 int drumleft = 0;
@@ -54,6 +59,50 @@ void processbuttons(FL_OBJECT * ob, int status) {
 	}
 }
 
+int atclose(FL_FORM* form, void*) {
+//	puts("Hello");
+	FD_main* fdui = (FD_main*)form->fdui;
+	fl_activate_object(fdui->quit);
+	fl_trigger_object(fdui->quit);
+
+	return FL_IGNORE;
+}
+
+
+Pixmap stipplebmp = 0;
+unsigned char stipple[8] = {0x55,0xaa,0x55,0xaa,0x55,0xaa,0x55,0xaa};
+
+int stipplehandle(FL_OBJECT *obj, int event, FL_Coord, FL_Coord, int, void *xev) {
+	GC gc = fl_state[fl_get_vclass()].gc[9];
+	XGCValues gcv;
+	Window win;
+	Display* dpy;
+
+	win = fl_winget();
+	dpy = fl_get_display();
+
+	switch(event) {
+		case FL_DRAW:
+			gcv.stipple = stipplebmp;
+			gcv.fill_style = FillStippled;
+			gcv.ts_x_origin = obj->x+3;
+			gcv.ts_y_origin = obj->y+3;
+			
+			XChangeGC(dpy, gc, GCStipple|GCFillStyle|GCTileStipXOrigin|GCTileStipYOrigin, &gcv);
+			
+			XSetForeground(dpy, gc, fl_get_pixel(FL_BLACK));
+			XFillRectangle(dpy, win, gc, obj->x+3, obj->y+3, obj->w-6, obj->h-6);
+			gcv.fill_style = FillSolid;
+			gcv.ts_x_origin = 0;
+			gcv.ts_y_origin = 0;
+			XSetForeground(dpy, gc, fl_get_pixel(FL_COL1));
+			XChangeGC(dpy, gc, GCFillStyle|GCTileStipXOrigin|GCTileStipYOrigin, &gcv);
+			break;
+	}
+	return 0;
+}
+
+
 void onread( FL_OBJECT * ob,
          long        data ) {
 	FILE *fptr;
@@ -75,6 +124,7 @@ void onread( FL_OBJECT * ob,
 
 	if (fptr == NULL) {
 		if (access(prndevice, F_OK) != 0) {
+			fl_free_pixmap_pixmap(fdui->trafficl);
 			fl_set_pixmap_data(fdui->trafficl, trafficr_xpm);
 			trafficlight = BR_RED;
 			sprintf(statustext, "%s\nOffline", prnmodel);
@@ -82,6 +132,7 @@ void onread( FL_OBJECT * ob,
 
 			processbuttons(ob, 0);
 		} else {
+			fl_free_pixmap_pixmap(fdui->trafficl);
 			fl_set_pixmap_data(fdui->trafficl, trafficy_xpm);
 			trafficlight = BR_YELLOW;
 			sprintf(statustext, "%s\nIn use", prnmodel);
@@ -109,12 +160,15 @@ void onread( FL_OBJECT * ob,
 				trafficv = trafficstat(atoi(keyvalue));
 				
 				if (trafficv == BR_RED) {
+					fl_free_pixmap_pixmap(fdui->trafficl);
 					fl_set_pixmap_data(fdui->trafficl, trafficr_xpm);
 					trafficlight = BR_RED;
 				} else if (trafficv == BR_GREEN) {
+					fl_free_pixmap_pixmap(fdui->trafficl);
 					fl_set_pixmap_data(fdui->trafficl, trafficg_xpm);
 					trafficlight = BR_GREEN;
 				} else if (trafficv == BR_YELLOW) {
+					fl_free_pixmap_pixmap(fdui->trafficl);
 					fl_set_pixmap_data(fdui->trafficl, trafficy_xpm);
 					trafficlight = BR_YELLOW;
 				}
@@ -177,23 +231,36 @@ void onprngo( FL_OBJECT * ob,
 	}
 
 	if (ob == fdui->prngo) {
+		if (fl_get_button(fdui->prnauto)) {
+			fp = fopen(prndevice, "w");
+			
+			if (fp != NULL) {
+				fprintf(fp, "\033%%-12345X@PJL USTATUSOFF\n\033%%-12345X");
+				fclose(fp);
+			}
+		}
+
 		strcpy(prndevice, fl_get_input(fdui->prnfile));
 		strcpy(prnmodel, "Printer");
 
-		tries = 0;
-	}
-
-	if (access(prndevice, F_OK) != 0) {
-		fl_set_pixmap_data(fdui->trafficl, trafficr_xpm);
-		trafficlight = BR_RED;
-		sprintf(statustext, "%s\nOffline", prnmodel);
-		fl_set_object_label(fdui->prninfo, statustext);
+		sentustatus = 0;
 
 		br_set_progress_status(fdui->drum, 0);
 		br_set_progress_status(fdui->tonerbk, 0);
 		br_set_progress_status(fdui->tonery, 0);
 		br_set_progress_status(fdui->tonerc, 0);
 		br_set_progress_status(fdui->tonerm, 0);
+
+
+		tries = 0;
+	}
+
+	if (access(prndevice, F_OK) != 0) {
+		fl_free_pixmap_pixmap(fdui->trafficl);
+		fl_set_pixmap_data(fdui->trafficl, trafficr_xpm);
+		trafficlight = BR_RED;
+		sprintf(statustext, "%s\nOffline", prnmodel);
+		fl_set_object_label(fdui->prninfo, statustext);
 
 		processbuttons(ob, 0);
 
@@ -203,6 +270,7 @@ void onprngo( FL_OBJECT * ob,
 	fp = fopen(prndevice, "w");
 
 	if (fp == NULL) {
+		fl_free_pixmap_pixmap(fdui->trafficl);
 		fl_set_pixmap_data(fdui->trafficl, trafficy_xpm);
 		trafficlight = BR_YELLOW;
 		sprintf(statustext, "%s\nIn use", prnmodel);
@@ -217,10 +285,17 @@ void onprngo( FL_OBJECT * ob,
 		fprintf(fp, "\033%%-12345X@PJL INFO BRSUPPLY\n\033%%-12345X");
 	}
 	
-	fprintf(fp, "\033%%-12345X@PJL INFO STATUS\n\033%%-12345X");
+	if (sentustatus == 0) {
+		sentustatus = 1;
+
+		fprintf(fp, "\033%%-12345X@PJL INFO STATUS\n\033%%-12345X");
+		if (fl_get_button(fdui->prnauto)) {
+			fprintf(fp, "\033%%-12345X@PJL USTATUS DEVICE=ON\n\033%%-12345X");
+		}
+	}
 	fclose(fp);
 
-	if (++tries == 15) tries = 0;
+	if (++tries == 30) tries = 0;
 }
 
 
@@ -260,12 +335,25 @@ void onsleep( FL_OBJECT * ob,
 }
 
 void onprnauto(FL_OBJECT* ob, long data) {
+	FILE* fp;
 	FD_main* fdui = (FD_main*)ob->form->fdui;
 
 	if (fl_get_button(ob)) {
 		fl_set_timer(fdui->timer, POLLRATE);
+		fp = fopen(prndevice, "w");
+			
+		if (fp != NULL) {
+			fprintf(fp, "\033%%-12345X@PJL USTATUS DEVICE=ON\n\033%%-12345X");
+			fclose(fp);
+		}
 	} else {
 		fl_set_timer(fdui->timer, 0.0);
+		fp = fopen(prndevice, "w");
+			
+		if (fp != NULL) {
+			fprintf(fp, "\033%%-12345X@PJL USTATUSOFF\n\033%%-12345X");
+			fclose(fp);
+		}
 	}
 }
 
@@ -285,8 +373,18 @@ void br_set_progress_status(FL_OBJECT* obj, int enable) {
 	if (obj->u_vdata != NULL) {
 		if (enable) {
 			fl_hide_object(obj->u_vdata);
+
+			if (((FL_OBJECT*)(obj->u_vdata))->u_vdata != NULL) {
+				//puts("Hiding");
+				fl_hide_object(((FL_OBJECT*)(obj->u_vdata))->u_vdata);
+			}
 		} else {
 			fl_show_object(obj->u_vdata);
+
+			if (((FL_OBJECT*)(obj->u_vdata))->u_vdata != NULL) {
+				fl_show_object( ((FL_OBJECT*)(obj->u_vdata))->u_vdata);
+			}
+
 			fl_set_slider_value(obj, 100);
 		}
 	} else {
@@ -299,6 +397,7 @@ void br_set_progress_status(FL_OBJECT* obj, int enable) {
 FL_OBJECT* br_add_vertical_progress(FL_Coord x, FL_Coord y, const char* label, FL_COLOR col) {
 	FL_OBJECT* obj;
 	FL_OBJECT* obj2;
+	FL_OBJECT* obj3;
 	
 	obj = fl_add_slider(FL_VERT_PROGRESS_BAR, x, y, 20, 90, label);
     fl_set_object_color(obj, FL_COL1, col);
@@ -306,11 +405,15 @@ FL_OBJECT* br_add_vertical_progress(FL_Coord x, FL_Coord y, const char* label, F
     fl_set_slider_value(obj, 100);
 	fl_set_object_bw(obj, 1);
 
-    obj2 = fl_add_pixmap(FL_NORMAL_PIXMAP, x, y, 20, 90, "");
-    fl_set_pixmap_data(obj2, checker_xpm);
-	fl_set_object_bw(obj2, 1);
+	obj2 = fl_add_free(FL_NORMAL_FREE, x, y, 20, 90, "", stipplehandle);
 	fl_hide_object(obj2);
 	obj->u_vdata = obj2;
+
+    obj3 = fl_add_pixmap(FL_NORMAL_PIXMAP, x, y, 20, 90, "");
+    fl_set_pixmap_data(obj3, na_xpm);
+	fl_set_object_bw(obj3, 1);
+	fl_hide_object(obj3);
+	obj2->u_vdata = obj3;
 
 	return obj;
 }
@@ -319,6 +422,7 @@ FL_OBJECT* br_add_vertical_progress(FL_Coord x, FL_Coord y, const char* label, F
 FL_OBJECT* br_add_horizontal_progress(FL_Coord x, FL_Coord y, const char* label, FL_COLOR col) {
 	FL_OBJECT* obj;
 	FL_OBJECT* obj2;
+	FL_OBJECT* obj3;
 	
 	obj = fl_add_slider(FL_HOR_PROGRESS_BAR, x, y, 110, 20, label);
     fl_set_object_color(obj, FL_COL1, col);
@@ -326,11 +430,16 @@ FL_OBJECT* br_add_horizontal_progress(FL_Coord x, FL_Coord y, const char* label,
     fl_set_slider_value(obj, 100);
 	fl_set_object_bw(obj, 1);
 
-    obj2 = fl_add_pixmap(FL_NORMAL_PIXMAP, x, y, 110, 20, "");
-    fl_set_pixmap_data(obj2, checkerhor_xpm);
-	fl_set_object_bw(obj2, 1);
-	//fl_hide_object(obj2);
+	obj2 = fl_add_free(FL_NORMAL_FREE, x, y, 110, 20, "", stipplehandle);
+	fl_hide_object(obj2);
 	obj->u_vdata = obj2;
+
+    obj3 = fl_add_pixmap(FL_NORMAL_PIXMAP, x, y, 110, 20, "");
+    fl_set_pixmap_data(obj3, nahor_xpm);
+	fl_set_object_bw(obj3, 1);
+	fl_hide_object(obj3);
+	obj2->u_vdata = obj3;
+
 
 	return obj;
 }
@@ -347,9 +456,12 @@ create_form_main( void )
     fdui->main = fl_bgn_form( FL_NO_BOX, 304, 227 );
 
     obj = fl_add_box( FL_FLAT_BOX, 0, 0, 304, 227, "" );
-    fl_set_object_resize( obj, FL_RESIZE_NONE );
-
-
+    //fl_set_object_resize( obj, FL_RESIZE_NONE );
+	
+	/*fdui->pixbtn = obj = fl_add_pixmapbutton(FL_HIDDEN_BUTTON, 0,0,0,0, "");
+	fl_set_pixmap_data(obj, trafficr_xpm);
+	fl_deactivate_object(obj);*/
+	
     obj = fl_add_text( FL_NORMAL_TEXT, 10, 10, 60, 20, "Device:" );
     fl_set_button_shortcut( obj, "#M", 1 );
 
@@ -373,6 +485,7 @@ create_form_main( void )
 
 	obj = fl_add_box( FL_DOWN_BOX, 4, 40, 297, 3, "" );
 	fl_set_object_bw(obj, 1);
+	fl_set_object_resize(obj, FL_RESIZE_X);
 
 	fdui->prninfo = fl_add_text( FL_NORMAL_TEXT, 50, 50, 245, 40, "Printer\nOffline" );
 
@@ -381,6 +494,7 @@ create_form_main( void )
 
 	obj = fl_add_box(FL_DOWN_BOX, 4, 96, 297, 3, "");
 	fl_set_object_bw(obj, 1);
+	fl_set_object_resize(obj, FL_RESIZE_X);
 
     fdui->prnmaint = obj = br_add_button(10, 110, 160, 20, "Send Maintenance Print" );
     fl_set_button_shortcut( obj, "#M", 1 );
@@ -389,10 +503,11 @@ create_form_main( void )
 
     fdui->prntest = obj = br_add_button(10, 135, 160, 20, "Send Test Print" );
     fl_set_button_shortcut( obj, "#T", 1 );
-    fl_set_object_callback( obj, onprntest, 0 );
+    //fl_set_object_callback( obj, onprntest, 0 );
 	br_deactivate_button(obj);
 
     fdui->drum = obj = br_add_horizontal_progress(60, 190, "", FL_BOTTOM_BCOL);
+	br_set_progress_status(fdui->drum, 0);
 
 	obj = fl_add_text( FL_NORMAL_TEXT, 10, 190, 50, 20, "Drum:" );
 
@@ -408,6 +523,9 @@ create_form_main( void )
 
 	fdui->tonerbk = br_add_vertical_progress(180, 110, "BK", FL_BLACK);
 	br_set_progress_status(fdui->tonerbk, 0);
+
+	//fl_add_free(FL_NORMAL_FREE, 180, 110, 10, 10, "", stipplehandle);
+
 	fdui->tonery = br_add_vertical_progress(210, 110, "Y", FL_YELLOW);
 	br_set_progress_status(fdui->tonery, 0);
 	fdui->tonerc = br_add_vertical_progress(240, 110, "C", FL_CYAN);
@@ -424,6 +542,9 @@ create_form_main( void )
     fdui->readtimer = obj = fl_add_timer( FL_HIDDEN_TIMER, 0,0,0,0, "");
 	fl_set_object_callback(fdui->readtimer, onread, 0);
 	fl_set_timer(fdui->readtimer, READRATE);
+
+	fdui->quit = fl_add_button(FL_HIDDEN_BUTTON, 0, 0, 0, 0, "" );
+	fl_deactivate_object(fdui->quit);
 	
 	fl_set_object_lcolor(fdui->sleepbtn, FL_INACTIVE);
 	fl_deactivate_object(fdui->sleepbtn);
@@ -439,19 +560,56 @@ create_form_main( void )
 
 
 int main(int argc, char* argv[]) {
-	FD_main *fd_main;
+	FILE* fp;
+	FD_main* fd_main;
+	Display* dpy;
+	Pixmap pix, pix_shape = None;
+	unsigned dummy;
 	//fl_set_icm_color(FL_COL1, 192, 192, 192);
 	fl_set_border_width(2);
 	fl_initialize(&argc, argv, 0, 0, 0);
+
+	dpy = fl_get_display();
+	stipplebmp = XCreateBitmapFromData(dpy, XDefaultRootWindow(dpy), stipple, 8,8);
+
 	fd_main = create_form_main();
 
-	fl_show_form(fd_main->main, FL_PLACE_CENTER, FL_FULLBORDER, "brinfo");
+	//fl_set_form_icon
+	//fl_show_form(fd_main->main, FL_PLACE_CENTER, FL_FULLBORDER, "brinfo");
+
+	if (fl_get_char_height(FL_NORMAL_STYLE, FL_SMALL_SIZE, NULL, NULL) > 14) {
+		fl_scale_form(fd_main->main, 1.1, 1.1);
+	}
+
+	fl_set_form_atclose(fd_main->main, atclose, NULL);
+
+	pix = fl_create_from_pixmapdata(fl_root, brinfo16_xpm,
+			&dummy, &dummy, &pix_shape, NULL, NULL, 0);
+	
+	if (pix != None && pix_shape != None) {
+		fl_set_form_icon(fd_main->main, pix, pix_shape);
+	}
+	
+	fl_show_form(fd_main->main, FL_PLACE_SIZE, FL_FULLBORDER, "brinfo");
 
 	fl_do_forms();
 
+	if (fl_get_button(fd_main->prnauto)) {
+		fp = fopen(prndevice, "w");
+	
+		if (fp != NULL) {
+			fprintf(fp, "\033%%-12345X@PJL USTATUSOFF\n\033%%-12345X");
+			fclose(fp);
+		}
+	}
+
 	if (fl_form_is_visible(fd_main->main)) fl_hide_form(fd_main->main);
 	fl_free(fd_main);
-	
+
+	puts("Goodbye");
+
+	if (stipplebmp) XFreePixmap(dpy, stipplebmp);
+
 	fl_finish();
 
 	return 0;

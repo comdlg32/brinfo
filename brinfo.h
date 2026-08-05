@@ -66,6 +66,9 @@ typedef struct {
 
 	FL_OBJECT * sleepbtn;
 	FL_OBJECT * drum;
+
+	FL_OBJECT * pixbtn;
+	FL_OBJECT* quit;
 	//FL_OBJECT * sleepbtn;
 } FD_main;
 
