@@ -28,10 +28,10 @@ clean:
 	rm -f brinfo.o $(OUTPUT)
 
 link-static: brinfo.o strerror.o
-	$(LD) $(LDFLAGS) -o $(OUTPUT) brinfo.o strerror.o \
+	$(LD) $(LDFLAGS) -o $(OUTPUT).out brinfo.o strerror.o \
 		-Wl,-Bstatic $(LDLIBS_STATIC) \
 		-Wl,-Bdynamic $(LDLIBS_DYNAMIC)
-	strip $(OUTPUT)
+	strip $(OUTPUT).out
 
 install: $(OUTPUT) $(OUTPUT).desktop
 	mkdir -p $(PREFIX)/share/applications
