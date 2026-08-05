@@ -35,7 +35,7 @@ void onread( FL_OBJECT *, long );
 void onprnfile( FL_OBJECT *, long );
 
 void onprngo( FL_OBJECT *, long );
-void onprnmaint( FL_OBJECT *, long );
+void onprnsettings( FL_OBJECT *, long );
 void onprntest( FL_OBJECT *, long );
 void onprnauto( FL_OBJECT *, long );
 void ontimer( FL_OBJECT *, long );
@@ -53,7 +53,7 @@ typedef struct {
     FL_OBJECT * prnfile;
     FL_OBJECT * prngo;
     FL_OBJECT * prninfo;
-    FL_OBJECT * prnmaint;
+    FL_OBJECT * prnsettings;
     FL_OBJECT * prntest;
     FL_OBJECT * prnauto;
     FL_OBJECT * timer;

@@ -6,6 +6,7 @@
 #include <sys/file.h>
 #include <errno.h>
 #include "brinfo.h"
+#include <signal.h>
 
 #include "trafficr.xpm"
 #include "trafficg.xpm"
@@ -32,6 +33,10 @@ int sentustatus = 0;
 int drumfull = 0;
 int drumleft = 0;
 int trafficlight = BR_RED;
+int lockfd;
+FD_main* fd_main = NULL;
+
+int prnautoon = 1;
 
 void br_activate_button(FL_OBJECT* btn) {
 	fl_set_object_lcolor(btn, FL_BLACK);
@@ -54,10 +59,10 @@ void processbuttons(FL_OBJECT * ob, int status) {
 	}
 
 	if (trafficlight == BR_RED) {
-		br_deactivate_button(fdui->prnmaint);
+		br_deactivate_button(fdui->prnsettings);
 		br_deactivate_button(fdui->prntest);
 	} else {
-		br_activate_button(fdui->prnmaint);
+		br_activate_button(fdui->prnsettings);
 		br_activate_button(fdui->prntest);
 	}
 }
@@ -229,12 +234,12 @@ void onprngo( FL_OBJECT * ob,
 	
 	FD_main* fdui = (FD_main*)ob->form->fdui;
 
-	if (fl_get_button(fdui->prnauto)) {
+	if (prnautoon) {
 		fl_set_timer(fdui->timer, POLLRATE);
 	}
 
 	if (ob == fdui->prngo) {
-		if (fl_get_button(fdui->prnauto)) {
+		if (prnautoon) {
 			fp = fopen(prndevice, "w");
 			
 			if (fp != NULL) {
@@ -292,7 +297,7 @@ void onprngo( FL_OBJECT * ob,
 		sentustatus = 1;
 
 		fprintf(fp, "\033%%-12345X@PJL INFO STATUS\n\033%%-12345X");
-		if (fl_get_button(fdui->prnauto)) {
+		if (prnautoon) {
 			fprintf(fp, "\033%%-12345X@PJL USTATUS DEVICE=ON\n\033%%-12345X");
 		}
 	}
@@ -302,14 +307,14 @@ void onprngo( FL_OBJECT * ob,
 }
 
 
-void onprnmaint( FL_OBJECT * ob,
+void onprnsettings( FL_OBJECT * ob,
          long        data )
 {
 	FILE* fp;
 	fp = fopen(prndevice, "w");
 
 	if (fp == NULL) return;
-	fprintf(fp, "\033%%-12345X@PJL EXECUTE MAINTENANCEPRINT\n\033%%-12345X");
+	fprintf(fp, "\033%%-12345X@PJL EXECUTE PRTCONFIG\n\033%%-12345X");
 	fclose(fp);
 }
 
@@ -329,12 +334,21 @@ void onsleep( FL_OBJECT * ob,
          long        data )
 {
 	FILE* fp;
+	FD_main* fdui = (FD_main*)ob->form->fdui;
 
 	fp = fopen(prndevice, "w");
 
 	if (fp == NULL) return;
 	fprintf(fp, "\033%%-12345X@PJL EXECUTE SHUTDOWN\n\033%%-12345X");
 	fclose(fp);
+
+	fl_free_pixmap_pixmap(fdui->trafficl);
+	fl_set_pixmap_data(fdui->trafficl, trafficg_xpm);
+	trafficlight = BR_GREEN;
+	sprintf(statustext, "%s\nSleep Mode", prnmodel);
+	fl_set_object_label(fdui->prninfo, statustext);
+
+	processbuttons(ob, 0);
 }
 
 void onprnauto(FL_OBJECT* ob, long data) {
@@ -342,6 +356,7 @@ void onprnauto(FL_OBJECT* ob, long data) {
 	FD_main* fdui = (FD_main*)ob->form->fdui;
 
 	if (fl_get_button(ob)) {
+		prnautoon = 1;
 		fl_set_timer(fdui->timer, POLLRATE);
 		fp = fopen(prndevice, "w");
 			
@@ -350,6 +365,7 @@ void onprnauto(FL_OBJECT* ob, long data) {
 			fclose(fp);
 		}
 	} else {
+		prnautoon = 0;
 		fl_set_timer(fdui->timer, 0.0);
 		fp = fopen(prndevice, "w");
 			
@@ -499,12 +515,12 @@ create_form_main( void )
 	fl_set_object_bw(obj, 1);
 	fl_set_object_resize(obj, FL_RESIZE_X);
 
-    fdui->prnmaint = obj = br_add_button(10, 110, 160, 20, "Send Maintenance Print" );
-    fl_set_button_shortcut( obj, "#M", 1 );
-    fl_set_object_callback( obj, onprnmaint, 0 );
+    fdui->prnsettings = obj = br_add_button(10, 110, 160, 20, "Print Printer Settings" );
+    fl_set_button_shortcut( obj, "#P", 1 );
+    fl_set_object_callback( obj, onprnsettings, 0 );
 	br_deactivate_button(obj);
 
-    fdui->prntest = obj = br_add_button(10, 135, 160, 20, "Send Test Print" );
+    fdui->prntest = obj = br_add_button(10, 135, 160, 20, "Print Test Page" );
     fl_set_button_shortcut( obj, "#T", 1 );
     //fl_set_object_callback( obj, onprntest, 0 );
 	br_deactivate_button(obj);
@@ -560,14 +576,33 @@ create_form_main( void )
     return fdui;
 }
 
+void sighandle(int sig, void* data) {
+	int pfd;
+
+	if ( !(lockfd < 0) ) {
+		close(lockfd);
+	}
+
+	if (fd_main && prnautoon) {
+		pfd = open(prndevice, O_WRONLY);
+
+		if (pfd >= 0) {
+			write(pfd, "\033%-12345X@PJL USTATUSOFF\n\033%-12345X", 34);
+			close(pfd);
+		}
+	}
+
+	signal(sig, SIG_DFL);
+	raise(sig);
+}
+
+
 
 int main(int argc, char* argv[]) {
 	FILE* fp;
-	FD_main* fd_main;
 	Display* dpy;
 	Pixmap pix, pix_shape = None;
 	unsigned dummy;
-	int lockfd;
 	
 	//fl_set_icm_color(FL_COL1, 192, 192, 192);
 	fl_set_border_width(2);
@@ -598,6 +633,16 @@ int main(int argc, char* argv[]) {
 		}
 	}
 
+	/*signal(SIGINT, sighandle);
+	signal(SIGTERM, sighandle);
+	signal(SIGHUP, sighandle);
+	signal(SIGQUIT, sighandle);*/
+
+	fl_add_signal_callback(SIGINT,  sighandle, NULL);
+	fl_add_signal_callback(SIGTERM, sighandle, NULL);
+	fl_add_signal_callback(SIGHUP,  sighandle, NULL);
+	fl_add_signal_callback(SIGQUIT, sighandle, NULL);
+
 
 	fd_main = create_form_main();
 	stipplebmp = XCreateBitmapFromData(dpy, XDefaultRootWindow(dpy), stipple, 8,8);
@@ -626,7 +671,7 @@ int main(int argc, char* argv[]) {
 
 	fl_do_forms();
 
-	if (fl_get_button(fd_main->prnauto)) {
+	if (prnautoon) {
 		fp = fopen(prndevice, "w");
 	
 		if (fp != NULL) {
@@ -637,10 +682,11 @@ int main(int argc, char* argv[]) {
 
 	if (fl_form_is_visible(fd_main->main)) fl_hide_form(fd_main->main);
 	fl_free(fd_main);
+	fd_main = NULL;
 
 	//puts("Goodbye");
 
-	if (stipplebmp) XFreePixmap(dpy, stipplebmp);
+	//if (stipplebmp) XFreePixmap(dpy, stipplebmp);
 
 	close(lockfd);
 	fl_finish();
