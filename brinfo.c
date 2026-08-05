@@ -606,7 +606,7 @@ int main(int argc, char* argv[]) {
 	if (fl_form_is_visible(fd_main->main)) fl_hide_form(fd_main->main);
 	fl_free(fd_main);
 
-	puts("Goodbye");
+	//puts("Goodbye");
 
 	if (stipplebmp) XFreePixmap(dpy, stipplebmp);
 
