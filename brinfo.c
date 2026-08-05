@@ -2,6 +2,9 @@
 
 #include <stdlib.h>
 #include <unistd.h>
+#include <fcntl.h>
+#include <sys/file.h>
+#include <errno.h>
 #include "brinfo.h"
 
 #include "trafficr.xpm"
@@ -536,12 +539,11 @@ create_form_main( void )
 
 	// TIMER
     fdui->timer = obj = fl_add_timer( FL_HIDDEN_TIMER, 0,0,0,0, "");
-	fl_set_timer(fdui->timer, 0.1);
 	fl_set_object_callback(fdui->timer, onprngo, 0);
+	//fl_set_timer(fdui->timer, 0.1);
 
     fdui->readtimer = obj = fl_add_timer( FL_HIDDEN_TIMER, 0,0,0,0, "");
 	fl_set_object_callback(fdui->readtimer, onread, 0);
-	fl_set_timer(fdui->readtimer, READRATE);
 
 	fdui->quit = fl_add_button(FL_HIDDEN_BUTTON, 0, 0, 0, 0, "" );
 	fl_deactivate_object(fdui->quit);
@@ -565,14 +567,40 @@ int main(int argc, char* argv[]) {
 	Display* dpy;
 	Pixmap pix, pix_shape = None;
 	unsigned dummy;
+	int lockfd;
+	
 	//fl_set_icm_color(FL_COL1, 192, 192, 192);
 	fl_set_border_width(2);
 	fl_initialize(&argc, argv, 0, 0, 0);
 
 	dpy = fl_get_display();
-	stipplebmp = XCreateBitmapFromData(dpy, XDefaultRootWindow(dpy), stipple, 8,8);
+
+	lockfd = open("/tmp/brinfo.lock", O_RDWR|O_CREAT, 0666);
+	if (lockfd < 0) {
+		fl_show_alert("Error", "Could not open/create lockfile!", "", 1);
+		fl_finish();
+
+		return 1;
+	}
+
+	if (flock(lockfd, LOCK_EX|LOCK_NB) < 0) {
+		close(lockfd);
+		if (errno == EWOULDBLOCK) {
+			fl_show_alert("Error", "Another instance already open!", NULL, 1);
+			fl_finish();
+
+			return 1;
+		} else {
+			fl_show_alert("Error", "Lock failed!", NULL, 1);
+			fl_finish();
+
+			return 1;
+		}
+	}
+
 
 	fd_main = create_form_main();
+	stipplebmp = XCreateBitmapFromData(dpy, XDefaultRootWindow(dpy), stipple, 8,8);
 
 	//fl_set_form_icon
 	//fl_show_form(fd_main->main, FL_PLACE_CENTER, FL_FULLBORDER, "brinfo");
@@ -590,7 +618,11 @@ int main(int argc, char* argv[]) {
 		fl_set_form_icon(fd_main->main, pix, pix_shape);
 	}
 	
-	fl_show_form(fd_main->main, FL_PLACE_SIZE, FL_FULLBORDER, "brinfo");
+
+	fl_set_timer(fd_main->timer, 0.1);
+	fl_set_timer(fd_main->readtimer, READRATE);
+
+	fl_show_form(fd_main->main, FL_PLACE_CENTER, FL_FULLBORDER, "brinfo");
 
 	fl_do_forms();
 
@@ -610,6 +642,7 @@ int main(int argc, char* argv[]) {
 
 	if (stipplebmp) XFreePixmap(dpy, stipplebmp);
 
+	close(lockfd);
 	fl_finish();
 
 	return 0;
