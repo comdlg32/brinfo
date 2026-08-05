@@ -1,11 +1,30 @@
-EXPLANATION
------------
-brinfo is a tool to get information (e.g. toner levels, drum health)
-from Brother Laser Printers. It uses PJL commands to get this
-infromation. It has only been tested on the Brother HL-1110.
+BRINFO
+------------
+
+brinfo is a lightweight and simple Brother status monitor tool I
+made using C and <a href="http://xforms-toolkit.org/">XForms</a>.
+It is designed for UN*X based systems.</p>
+
+It can grab information (e.g. toner levels, drum health) It uses
+PJL commands to get this infromation. It has only been tested on the
+Brother HL-1110, but should work on other Brother printers in
+theory.
 
 MOTIVATION
-----------
+------------
+
 I found no program that seems to do this and I wanted a new project
 to work on :^)
 
+INSTALLATION
+------------
+
+Run these commands:
+
+sudo apt-get install build-essential libforms-dev libx11-dev
+git clone https://github.com/comdlg32/brinfo
+make && sudo make install
+
+You can also get a static binary in GitHub releases on the sidebar
+or my webpage:
+https://xcomp.coralcmd.net/projects/brinfo/
